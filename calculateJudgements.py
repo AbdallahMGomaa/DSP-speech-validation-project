@@ -1,8 +1,18 @@
-# importing the required modules
 from loadMFCC import loadUser, loadReferences
 import matplotlib.pyplot as plt
 import pandas as pd,numpy as np
-import time
+from calculateThreshold import calculateThreshold
+types = [
+    'M',
+    'F',
+    'C'
+]
+
+sources = [
+    'C',
+    'M',
+    'W'
+]
 
 # loading reference MFCCs and user MFCCs
 print("reading files...")
@@ -18,6 +28,9 @@ for user in users:
     user.setTestUtterence()
     user.calculateReference(references)
 
+#calculate thresholds of pairs
+thresholds = calculateThreshold(users,references)
+
 # calculate the judgements for a set of users
 def calculateJudgements(users, references ,print_results=False):
     usersSize = len(users)
@@ -28,15 +41,12 @@ def calculateJudgements(users, references ,print_results=False):
     labels = 5
     judgements = np.zeros((types,words,labels))
 
-    total_start_time = time.perf_counter()
     for i,user in enumerate(users):
-        start_time = time.perf_counter ()
-        print('calculating judgement for user: {}, group: {}, student: {}, type: {}, age: {} '.format(i+1,user.group, user.student, user.Type, user.age))
-        judgements[user.reference] += user.getJudgements(references)
-        end_time = time.perf_counter ()
-        print('calculation time: ', end_time - start_time,"seconds")
-    total_end_time = time.perf_counter ()
-    print('total calculation time: ', total_end_time - total_start_time,"seconds")
+        print('calculating judgement for user: {}, group: {}, student: {}, type: {}, age: {}, source: {}'.format(i+1,user.group, user.student, user.Type, user.age, user.source),end=" ")
+        userJudgements = user.getJudgements(references,thresholds)
+        Sum = np.sum(userJudgements,axis=0)
+        print("correct = {} , wrong = {}".format(Sum[3],Sum[4]))
+        judgements[user.reference] += userJudgements
     total = [[0,0],[0,0],[0,0]]
     totalCorrect = 0
     totalWrong = 0
@@ -68,41 +78,29 @@ def calculateJudgements(users, references ,print_results=False):
 
 judgements = calculateJudgements(users, references,print_results=True)
 
-
-
-types = [
-    'M',
-    'F',
-    'C'
-]
-
-sources = [
-    'C',
-    'M',
-    'W'
-]
-
-def drawMismatches(users,numberOfMismatches=5, plot_results=False,save_results=False):
-    plt.xlabel("frame")
-    plt.ylabel("mismatch")
+def drawMismatches(users,numberOfMismatches=5, plot_results=False,save_results=False):  
+    plt.rcParams["figure.autolayout"] = True
     for user in users:
-        name = "G{}S{}{}{}{}".format(user.group,user.student,types[user.Type],user.age,sources[user.source])
+        name = "G{}S{}{}{}{}{}".format(user.group,user.student,types[user.Type],user.age,sources[user.source])
         rows = int(np.sqrt(numberOfMismatches))
         columns = int(np.round(numberOfMismatches/rows+0.5))
         j = 0
+        plt.figure()
         for i,utterence in enumerate(user.utterences):
             _, _, distances = utterence.reconstruct(references[user.reference].utterences[i])
             if distances is not None and not user.utterences[i].correct:
-                utterenceDetails = "W{}P{}".format(utterence.pair,utterence.word)
+                utterenceDetails = "P{}W{}".format(utterence.pair,utterence.word)
+                plt.xlabel("frame")
+                plt.ylabel("mismatch")
                 plt.subplot(rows,columns,j+1,title=name+utterenceDetails)
                 plt.plot(distances)
                 j += 1
             if j == numberOfMismatches:
                 break
         if save_results:
-            print("saving figure: ", name)
+            print("saving figure:", name)
             plt.savefig("plots/"+name+".png")
         if plot_results:
-            plt.show()
+            plt.show(block=False)
 
 drawMismatches(users,numberOfMismatches=11, plot_results=False,save_results=True)
