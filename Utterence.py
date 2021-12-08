@@ -1,6 +1,7 @@
-from fastdtw import dtw as dtw
+# from fastdtw import dtw as dtw
+from dtw import dtw
 from scipy.spatial.distance import euclidean
-import numpy as np
+# import numpy as np
 
 
 class Utterence:
@@ -10,20 +11,22 @@ class Utterence:
         self.MFCC = MFCC
         self.perFrameDistance = None
         self.reconstructed = None
-        self.totalDistance = None
         self.predicted = -1
     def distance(self,reference):
-        if self.totalDistance is None:
-            shape = np.shape(reference.MFCC)
-            d,path = dtw(reference.MFCC,self.MFCC,dist=euclidean)
-            self.reconstructed = np.zeros(shape)
-            for i,j in path:
-                self.reconstructed[i] = self.MFCC[j]
-            self.totalDistance = d
-            dist = []
-            for i in range(np.shape(reference.MFCC)[0]):
-                dist.append(euclidean(reference.MFCC[i],self.reconstructed[i]))
-            self.perFrameDistance = dist
-            return d
-        else:
-            return self.totalDistance
+        # shape = np.shape(reference.MFCC)
+        d = dtw(reference.MFCC,self.MFCC,False)
+        # d, path = dtw(reference.MFCC,self.MFCC, euclidean)
+        # self.reconstructed = np.zeros(shape)
+        # for i,j in enumerate(path):
+        #     self.reconstructed[i] = self.MFCC[j]
+        # self.totalDistance = d
+        # dist = []
+        # for i in range(np.shape(reference.MFCC)[0]):
+        #     dist.append(euclidean(reference.MFCC[i],self.reconstructed[i]))
+        # self.perFrameDistance = dist
+        return d
+
+    def reconstruct(self,reference):
+        d,self.reconstructed,distances = dtw(reference.MFCC,self.MFCC,True)
+        return d,self.reconstructed,distances
+        

@@ -59,7 +59,7 @@ class User():
                 judgements[self.reference][i*2+1][1] += 1
                 judgements[self.reference][i*2+1][3] += 1
                 self.utterences[i*2+1].predicted = 2
-            elif d21<=d11 and d21<=d12 and d21<=d22 and d21<=threshold:
+            elif d21<=d11 and d21<=d12 and d21<=d22 and d12<=threshold:
                 judgements[self.reference][i*2+1][2] += 1
                 judgements[self.reference][i*2+1][4] += 1
                 self.utterences[i*2+1].predicted = 1

@@ -6,8 +6,13 @@ def dtw(reference, sequence , reconstruct=False):
     sequence = np.array(sequence)
     assert np.shape(reference)[1] == np.shape(sequence)[1],"reference and y must have the same number of columns"
     k = np.shape(reference)[1]
-    r, c = np.shape(reference)[0], np.shape(sequence)[0]
-    assert r>=c//2 and r<=c*2, "reference must have at least half as many rows as sequence"
+    r, c = np.shape(sequence)[0], np.shape(reference)[0]
+    # assert r>=c//2 and r<=c*2, "reference must have at least half as many rows as sequence"
+    if not (r>=c//2 and r<=c*2):
+        # print("reference must have at least half as many rows as sequence")
+        if reconstruct:
+            return np.inf, None, None
+        return np.inf
 
     # Initialize the cost matrix
     D = np.zeros((r+1,c+1))
@@ -19,7 +24,7 @@ def dtw(reference, sequence , reconstruct=False):
     d = np.zeros((r,c))
     for i in range(r):
         for j in range(c):
-            d[i,j] = np.sqrt((reference[i]-sequence[j]).T.dot(reference[i]-sequence[j]))/k
+            d[i,j] = np.sqrt((reference[j,:]-sequence[i,:]).T.dot(reference[j,:]-sequence[i,:]))
 
     # setting unwanted region to infinity
     j_limit = 0
@@ -44,9 +49,7 @@ def dtw(reference, sequence , reconstruct=False):
             d[i,j] = np.inf
     
     # initializing optimal path matrix
-    B = np.zeros((r+1, c+1,2),dtype=np.int)
-    B[0,1:,:] = np.iinfo(np.int32).max
-    B[1:,0,:] = np.iinfo(np.int32).max
+    B = np.zeros((r,c,2),dtype=np.int)
     B[0,0,:] = [0,0]
 
     # computing cost matrix and optimal path matrix
@@ -55,30 +58,52 @@ def dtw(reference, sequence , reconstruct=False):
             if d[i,j] == np.inf:
                 D[i+1,j+1] = np.inf
                 continue
-            if B[i,j+1,0] == i-1 and B[i,j+1,1] == j+1:
+            if B[i-1,j,0] == i-2 and B[i-1,j,1] == j:
                 D[i+1,j+1] = d[i,j]+min(D[i+1,j],D[i,j])
-                index = argmin([D[i,j],D[i+1,j]])
-                B[i+1,j+1,0],B[i+1,j+1,1] = i+index,j
-            elif B[i+1,j,0] == i+1 and B[i+1,j,1] == j-1:
+                index = argmin([D[i+1,j],D[i,j]])
+                B[i,j,0],B[i,j,1] = i-index,j-1
+            elif B[i,j-1,0] == i and B[i,j-1,1] == j-2:
                 D[i+1,j+1] = d[i,j]+min(D[i,j],D[i,j+1])
-                index = argmin([D[i,j],D[i,j+1]])
-                B[i+1,j+1,0],B[i+1,j+1,1] = i, j+index
+                index = argmin([D[i,j+1],D[i,j]])
+                B[i,j,0],B[i,j,1] = i-1, j-index
             else:
                 D[i+1,j+1] = d[i,j]+min(D[i+1,j],D[i,j+1],D[i,j])
                 index = argmin([D[i+1,j],D[i,j+1],D[i,j]])
-                B[i+1,j+1,0],B[i+1,j+1,1] = i+int(index==0), j+int(index==1)
-    i = r
-    j = c
-    path = np.zeros((c,2),dtype=np.int)
-    while i>1 and j>1:
-        path[j-1] = np.flip(B[i,j],0)
-        path[j-1,1] -= 1
-        i,j = B[i,j,0],B[i,j,1]
+                B[i,j,0],B[i,j,1] = i-int(index>0), j-1+int(index==1)
+    
 
     if reconstruct:
+        i = r-1
+        j = c-1
+        # path = [(i,j)]
+        path = np.zeros((c,2),dtype=np.int)
+        path[-1,:] = [i,j]
+        while i>0 and j>0:
+            path[j-1] = B[i,j]
+            i,j = B[i,j,0],B[i,j,1]
+            # step = (B[i,j,0],B[i,j,1])
+            # path.insert(0, (step[0],step[1]))
+            # i,j = step
+        if r<c:
+            print("found it")
         constructed_sequence = np.zeros((c,k))
+        # i,j = path[0]
+        skipNext = False
+        k=0
         for i,j in path:
-            constructed_sequence[i] = sequence[j]
-        return D[r,c],constructed_sequence
-    return D[r, c],path
+            if not skipNext:
+                if k+1<c and j == path[k+1,1]:
+                    constructed_sequence[j] = (sequence[i]+sequence[i+1])/2
+                    skipNext = True
+                else:
+                    constructed_sequence[j] = sequence[i]
+            else:
+                skipNext = False
+            k += 1
+        distances = np.zeros((c,1),np.float64)
+        for i in range(c):
+            distances[i] = np.sqrt((reference[i,:]-constructed_sequence[i,:]).T.dot(reference[i,:]-constructed_sequence[i,:]))
+        return D[r,c],constructed_sequence, distances
+
+    return D[r, c]
 
