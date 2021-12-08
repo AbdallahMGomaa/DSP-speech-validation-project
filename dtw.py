@@ -24,7 +24,7 @@ def dtw(reference, sequence , reconstruct=False):
     d = np.zeros((r,c))
     for i in range(r):
         for j in range(c):
-            d[i,j] = np.sqrt((reference[j,:]-sequence[i,:]).T.dot(reference[j,:]-sequence[i,:]))
+            d[i,j] = np.sqrt((reference[j]-sequence[i]).T.dot(reference[j]-sequence[i]))
 
     # setting unwanted region to infinity
     j_limit = 0
@@ -50,7 +50,7 @@ def dtw(reference, sequence , reconstruct=False):
     
     # initializing optimal path matrix
     B = np.zeros((r,c,2),dtype=np.int)
-    B[0,0,:] = [0,0]
+    B[0,0] = [0,0]
 
     # computing cost matrix and optimal path matrix
     for i in range(r):
@@ -61,38 +61,31 @@ def dtw(reference, sequence , reconstruct=False):
             if B[i-1,j,0] == i-2 and B[i-1,j,1] == j:
                 D[i+1,j+1] = d[i,j]+min(D[i+1,j],D[i,j])
                 index = argmin([D[i+1,j],D[i,j]])
-                B[i,j,0],B[i,j,1] = i-index,j-1
+                B[i,j] = [i-index,j-1]
             elif B[i,j-1,0] == i and B[i,j-1,1] == j-2:
                 D[i+1,j+1] = d[i,j]+min(D[i,j],D[i,j+1])
                 index = argmin([D[i,j+1],D[i,j]])
-                B[i,j,0],B[i,j,1] = i-1, j-index
+                B[i,j] = [i-1, j-index]
             else:
                 D[i+1,j+1] = d[i,j]+min(D[i+1,j],D[i,j+1],D[i,j])
                 index = argmin([D[i+1,j],D[i,j+1],D[i,j]])
-                B[i,j,0],B[i,j,1] = i-int(index>0), j-1+int(index==1)
+                B[i,j] = [i-int(index>0), j-1+int(index==1)]
     
 
     if reconstruct:
         i = r-1
         j = c-1
-        # path = [(i,j)]
-        path = np.zeros((c,2),dtype=np.int)
-        path[-1,:] = [i,j]
-        while i>0 and j>0:
-            path[j-1] = B[i,j]
-            i,j = B[i,j,0],B[i,j,1]
-            # step = (B[i,j,0],B[i,j,1])
-            # path.insert(0, (step[0],step[1]))
-            # i,j = step
-        if r<c:
-            print("found it")
+        path = [(i,j)]
+        while i>0 or j>0:
+            step = (B[i,j,0],B[i,j,1])
+            path.insert(0, (step[0],step[1]))
+            i,j = step
         constructed_sequence = np.zeros((c,k))
-        # i,j = path[0]
         skipNext = False
         k=0
         for i,j in path:
             if not skipNext:
-                if k+1<c and j == path[k+1,1]:
+                if k+1<c and j == path[k+1][1]:
                     constructed_sequence[j] = (sequence[i]+sequence[i+1])/2
                     skipNext = True
                 else:
@@ -103,6 +96,8 @@ def dtw(reference, sequence , reconstruct=False):
         distances = np.zeros((c,1),np.float64)
         for i in range(c):
             distances[i] = np.sqrt((reference[i,:]-constructed_sequence[i,:]).T.dot(reference[i,:]-constructed_sequence[i,:]))
+        Sum = sum(distances)
+        
         return D[r,c],constructed_sequence, distances
 
     return D[r, c]

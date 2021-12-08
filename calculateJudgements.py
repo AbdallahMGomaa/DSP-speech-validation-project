@@ -1,15 +1,20 @@
+# importing the required modules
 from loadMFCC import loadUser, loadReferences
 import matplotlib.pyplot as plt
 import pandas as pd,numpy as np
+import time
 
+
+# loading reference MFCCs and user MFCCs
 print("reading files...")
 references = loadReferences('reference')
 users = loadUser('users')
 
-
+# for all references set the test reference to utterence number 123
 for reference in references:
     reference.setTestUtterence()
 
+#
 for user in users:
     user.setTestUtterence()
     user.calculateReference(references)
@@ -17,13 +22,21 @@ for user in users:
 
 usersSize = len(users)
 print('usersSize: ', usersSize)
-# id = int(input('enter user id to analyze: '))
-# assert id < usersSize and id>=0, 'user id is out of range'
 
-judgements = np.zeros((3,122,5))
+words = 122
+types = 3
+labels = 5
+judgements = np.zeros((types,words,labels))
+
+total_start_time = time.perf_counter()
 for i,user in enumerate(users):
-    print('user: {}, group: {}, student: {}, type: {}, age: {} '.format(i+1,user.group, user.student, user.Type, user.age))
+    start_time = time.perf_counter ()
+    print('calculating judgement for user: {}, group: {}, student: {}, type: {}, age: {} '.format(i+1,user.group, user.student, user.Type, user.age))
     user.calculateJudgements(judgements,references)
+    end_time = time.perf_counter ()
+    print('calculation time: ', end_time - start_time,"seconds")
+total_end_time = time.perf_counter ()
+print('total calculation time: ', total_end_time - total_start_time,"seconds")
 total = [[0,0],[0,0],[0,0]]
 totalCorrect = 0
 totalWrong = 0
@@ -76,16 +89,15 @@ types = [
     'F',
     'C'
 ]
+
 sources = [
     'C',
     'M',
     'W'
 ]
 
-
 for user in users:
     name = "G{}S{}{}{}{}".format(user.group,user.student,types[user.Type],user.age,sources[user.source])
-    plt.figure(name)
     rows = int(np.sqrt(len(user.utterences)))
     columns = int(np.round(len(user.utterences)/rows+0.5))
     for i,utterence in enumerate(user.utterences):
