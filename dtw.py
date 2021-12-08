@@ -96,7 +96,12 @@ def dtw(reference, sequence ,dist = np.linalg.norm, reconstruct=False):
             k += 1
         distances = np.zeros((c,1),np.float64)
         for i in range(c):
+<<<<<<< HEAD
             distances[i] = np.sqrt((reference[i,:]-constructed_sequence[i,:]).T.dot(reference[i,:]-constructed_sequence[i,:]))        
+=======
+            distances[i] = np.sqrt((reference[i,:]-constructed_sequence[i,:]).T.dot(reference[i,:]-constructed_sequence[i,:]))
+        
+>>>>>>> 77ca8eccf2cd91b0c3cb8123493d8ab3f6dbe968
         return D[r,c],constructed_sequence, distances
 
     return D[r, c]
