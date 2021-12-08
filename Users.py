@@ -27,14 +27,6 @@ class User():
         self.testUtterence = self.utterences[-1]
         self.utterences.pop()
 
-    
-    # def splitToPairs(self,pairs=61,words=2):
-    #     self.pairs = []
-    #     for i in range(pairs):
-    #         wordsList = []
-    #         for j in range(words):
-    #             wordsList.append(self.utterences[i*words+j])
-    #         self.pairs.append(wordsList)
 
     def getJudgements(self,references,threshold=np.inf):
         judgements = np.zeros((len(self.utterences),5))
@@ -44,11 +36,11 @@ class User():
             d12 = self.utterences[i*2].distance(references[self.reference].utterences[i*2+1])
             d21 = self.utterences[i*2+1].distance(references[self.reference].utterences[i*2])
             d22 = self.utterences[i*2+1].distance(references[self.reference].utterences[i*2+1])
-            if d11<=d12 and d11<=d21 and d11<=d22 and d11<=threshold:
+            if d11<=d12 and d11<=threshold:
                 judgements[i*2][2] += 1
                 judgements[i*2][3] += 1
                 self.utterences[i*2].correct = True
-            elif d12<=d11 and d12<=d21 and d12<=d22 and d12<=threshold:
+            elif d12<=d11 and d12<=threshold:
                 judgements[i*2][1] += 1
                 judgements[i*2][4] += 1
                 self.utterences[i*2].correct = False
@@ -56,14 +48,14 @@ class User():
                 judgements[i*2][0] += 1
                 judgements[i*2][4] += 1
                 self.utterences[i*2].correct = False
-            if d22<=d11 and d22<=d12 and d22<=d21 and d22<=threshold:
+            if d22<=d21 and d22<=threshold:
                 judgements[i*2+1][1] += 1
                 judgements[i*2+1][3] += 1
-                self.utterences[i*2+1].correct = False
-            elif d21<=d11 and d21<=d12 and d21<=d22 and d12<=threshold:
+                self.utterences[i*2+1].correct = True
+            elif d21<=d22 and d21<=threshold:
                 judgements[i*2+1][2] += 1
                 judgements[i*2+1][4] += 1
-                self.utterences[i*2+1].correct = True
+                self.utterences[i*2+1].correct = False
             else:
                 judgements[i*2+1][0] += 1
                 judgements[i*2+1][4] += 1

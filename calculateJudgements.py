@@ -13,12 +13,12 @@ users = loadUser('users')
 for reference in references:
     reference.setTestUtterence()
 
-#
+# for all users set the test reference to utterence number 123 and calculate the reference user
 for user in users:
     user.setTestUtterence()
     user.calculateReference(references)
 
-
+# calculate the judgements for a set of users
 def calculateJudgements(users, references ,print_results=False):
     usersSize = len(users)
     print('usersSize: ', usersSize)
@@ -81,7 +81,10 @@ sources = [
     'M',
     'W'
 ]
+
 def drawMismatches(users,numberOfMismatches=5, plot_results=False,save_results=False):
+    plt.xlabel("frame")
+    plt.ylabel("mismatch")
     for user in users:
         name = "G{}S{}{}{}{}".format(user.group,user.student,types[user.Type],user.age,sources[user.source])
         rows = int(np.sqrt(numberOfMismatches))
@@ -89,19 +92,17 @@ def drawMismatches(users,numberOfMismatches=5, plot_results=False,save_results=F
         j = 0
         for i,utterence in enumerate(user.utterences):
             _, _, distances = utterence.reconstruct(references[user.reference].utterences[i])
-            if distances is not None:
+            if distances is not None and not user.utterences[i].correct:
                 utterenceDetails = "W{}P{}".format(utterence.pair,utterence.word)
-                plt.xlabel("frame")
-                plt.ylabel("mismatch")
-                plt.subplot(rows,columns,i+1,title=utterenceDetails)
+                plt.subplot(rows,columns,j+1,title=name+utterenceDetails)
                 plt.plot(distances)
                 j += 1
             if j == numberOfMismatches:
                 break
-        print("saving figure: ", name)
         if save_results:
+            print("saving figure: ", name)
             plt.savefig("plots/"+name+".png")
         if plot_results:
             plt.show()
 
-drawMismatches(users,numberOfMismatches=5, plot_results=True,save_results=True)
+drawMismatches(users,numberOfMismatches=11, plot_results=False,save_results=True)
