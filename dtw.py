@@ -96,7 +96,6 @@ def dtw(reference, sequence , reconstruct=False):
         distances = np.zeros((c,1),np.float64)
         for i in range(c):
             distances[i] = np.sqrt((reference[i,:]-constructed_sequence[i,:]).T.dot(reference[i,:]-constructed_sequence[i,:]))
-        Sum = sum(distances)
         
         return D[r,c],constructed_sequence, distances
 
