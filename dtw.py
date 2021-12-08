@@ -1,7 +1,8 @@
 import numpy as np
 from numpy.core.fromnumeric import argmin
 
-def dtw(reference, sequence , reconstruct=False):
+
+def dtw(reference, sequence ,dist = np.linalg.norm, reconstruct=False):
     reference = np.array(reference)
     sequence = np.array(sequence)
     assert np.shape(reference)[1] == np.shape(sequence)[1],"reference and y must have the same number of columns"
@@ -24,7 +25,7 @@ def dtw(reference, sequence , reconstruct=False):
     d = np.zeros((r,c))
     for i in range(r):
         for j in range(c):
-            d[i,j] = np.sqrt((reference[j]-sequence[i]).T.dot(reference[j]-sequence[i]))
+            d[i,j] = dist(reference[j]-sequence[i])
 
     # setting unwanted region to infinity
     j_limit = 0
@@ -99,4 +100,3 @@ def dtw(reference, sequence , reconstruct=False):
         return D[r,c],constructed_sequence, distances
 
     return D[r, c]
-

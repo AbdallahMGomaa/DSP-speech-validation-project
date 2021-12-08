@@ -36,7 +36,8 @@ class User():
     #             wordsList.append(self.utterences[i*words+j])
     #         self.pairs.append(wordsList)
 
-    def calculateJudgements(self,judgements,references,threshold=np.inf):
+    def getJudgements(self,references,threshold=np.inf):
+        judgements = np.zeros((len(self.utterences),5))
         pairs = len(self.utterences)//2
         for i in range(pairs):
             d11 = self.utterences[i*2].distance(references[self.reference].utterences[i*2])
@@ -44,26 +45,27 @@ class User():
             d21 = self.utterences[i*2+1].distance(references[self.reference].utterences[i*2])
             d22 = self.utterences[i*2+1].distance(references[self.reference].utterences[i*2+1])
             if d11<=d12 and d11<=d21 and d11<=d22 and d11<=threshold:
-                judgements[self.reference][i*2][2] += 1
-                judgements[self.reference][i*2][3] += 1
-                self.utterences[i*2].predicted = 1
+                judgements[i*2][2] += 1
+                judgements[i*2][3] += 1
+                self.utterences[i*2].correct = True
             elif d12<=d11 and d12<=d21 and d12<=d22 and d12<=threshold:
-                judgements[self.reference][i*2][1] += 1
-                judgements[self.reference][i*2][4] += 1
-                self.utterences[i*2].predicted = 2
+                judgements[i*2][1] += 1
+                judgements[i*2][4] += 1
+                self.utterences[i*2].correct = False
             else:
-                judgements[self.reference][i*2][0] += 1
-                judgements[self.reference][i*2][4] += 1
-                self.utterences[i*2].predicted = 0
+                judgements[i*2][0] += 1
+                judgements[i*2][4] += 1
+                self.utterences[i*2].correct = False
             if d22<=d11 and d22<=d12 and d22<=d21 and d22<=threshold:
-                judgements[self.reference][i*2+1][1] += 1
-                judgements[self.reference][i*2+1][3] += 1
-                self.utterences[i*2+1].predicted = 2
+                judgements[i*2+1][1] += 1
+                judgements[i*2+1][3] += 1
+                self.utterences[i*2+1].correct = False
             elif d21<=d11 and d21<=d12 and d21<=d22 and d12<=threshold:
-                judgements[self.reference][i*2+1][2] += 1
-                judgements[self.reference][i*2+1][4] += 1
-                self.utterences[i*2+1].predicted = 1
+                judgements[i*2+1][2] += 1
+                judgements[i*2+1][4] += 1
+                self.utterences[i*2+1].correct = True
             else:
-                judgements[self.reference][i*2+1][0] += 1
-                judgements[self.reference][i*2+1][4] += 1
-                self.utterences[i*2+1].predicted = 0
+                judgements[i*2+1][0] += 1
+                judgements[i*2+1][4] += 1
+                self.utterences[i*2+1].correct = False
+        return judgements
