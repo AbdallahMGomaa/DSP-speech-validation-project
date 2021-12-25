@@ -5,13 +5,13 @@ from calculateThreshold import calculateThreshold
 import timeit
 
 
-types = [
+Types = [
     'M',
     'F',
     'C'
 ]
 
-sources = [
+Sources = [
     'C',
     'M',
     'W'
@@ -37,13 +37,12 @@ for user in users:
 #calculate thresholds of pairs
 print("calculating thresholds...")
 thresholds = calculateThreshold(users,references)
-
 # calculate the judgements for a set of users
 def calculateJudgements(users, references,words=122,types=3,labels=5 ,print_results=False):
     judgements = np.zeros((types,words,labels),dtype=int)
     for i,user in enumerate(users):
         start = timeit.default_timer()
-        print('calculating judgement for user: {}, group: {}, student: {}, type: {}, age: {}, source: {}'.format(i+1,user.group, user.student, user.Type, user.age, user.source),end=" ")
+        print('calculating judgement for user: {}, group: {}, student: {}, type: {}, age: {}, source: {}'.format(i+1,user.group, user.student, Types[user.Type], user.age, Sources[user.source]),end=" ")
         userJudgements = user.getJudgements(references,thresholds)
         stop = timeit.default_timer()
         Sum = np.sum(userJudgements,axis=0)
@@ -78,12 +77,16 @@ def calculateJudgements(users, references,words=122,types=3,labels=5 ,print_resu
         pd.DataFrame(judgements[2,:,:]).to_csv(csvfile+"_child.csv", index=False, header=["other","word2","word1","correct","wrong"])
     return judgements
 print("calculating judgements...")
+
+start = timeit.default_timer()
 judgements = calculateJudgements(users, references,print_results=True)
+stop = timeit.default_timer()
+print("total time for judgement: ", stop-start)
 
 def drawMismatches(users,numberOfMismatches=5, plot_results=False,save_results=False):  
     plt.rcParams["figure.autolayout"] = True
     for user in users:
-        name = "G{}S{}{}{}{}".format(user.group,user.student,types[user.Type],user.age,sources[user.source])
+        name = "G{}S{}{}{}{}".format(user.group,user.student,Types[user.Type],user.age,Sources[user.source])
         rows = int(np.sqrt(numberOfMismatches))
         columns = int(np.round(numberOfMismatches/rows+0.5))
         j = 0
@@ -104,4 +107,4 @@ def drawMismatches(users,numberOfMismatches=5, plot_results=False,save_results=F
         if plot_results:
             plt.show(block=False)
 
-drawMismatches(users,numberOfMismatches=11, plot_results=False,save_results=True)
+# drawMismatches(users,numberOfMismatches=11, plot_results=False,save_results=True)
