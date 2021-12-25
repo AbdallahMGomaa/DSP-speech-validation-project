@@ -29,18 +29,18 @@ class User():
 
 
     def getJudgements(self,references,thresholds):
-        judgements = np.zeros((len(self.utterences),5))
+        judgements = np.zeros((len(self.utterences),5),dtype=int)
         pairs = len(self.utterences)//2
         for i in range(pairs):
             d11 = self.utterences[i*2].distance(references[self.reference].utterences[i*2])
             d12 = self.utterences[i*2].distance(references[self.reference].utterences[i*2+1])
             d21 = self.utterences[i*2+1].distance(references[self.reference].utterences[i*2])
             d22 = self.utterences[i*2+1].distance(references[self.reference].utterences[i*2+1])
-            if d11<=d12 and d11<=thresholds[i]:
+            if d11<=d12 and d11<=thresholds[2*i]:
                 judgements[i*2][2] += 1
                 judgements[i*2][3] += 1
                 self.utterences[i*2].correct = True
-            elif d12<=d11 and d12<=thresholds[i]:
+            elif d12<=d11 and d12<=thresholds[2*i+1]:
                 judgements[i*2][1] += 1
                 judgements[i*2][4] += 1
                 self.utterences[i*2].correct = False
@@ -48,11 +48,11 @@ class User():
                 judgements[i*2][0] += 1
                 judgements[i*2][4] += 1
                 self.utterences[i*2].correct = False
-            if d22<=d21 and d22<=thresholds[i]:
+            if d22<=d21 and d22<=thresholds[2*i+1]:
                 judgements[i*2+1][1] += 1
                 judgements[i*2+1][3] += 1
                 self.utterences[i*2+1].correct = True
-            elif d21<=d22 and d21<=thresholds[i]:
+            elif d21<=d22 and d21<=thresholds[2*i]:
                 judgements[i*2+1][2] += 1
                 judgements[i*2+1][4] += 1
                 self.utterences[i*2+1].correct = False

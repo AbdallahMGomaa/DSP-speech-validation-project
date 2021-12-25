@@ -23,9 +23,6 @@ def dtw(reference, sequence ,dist = np.linalg.norm, reconstruct=False):
 
     # Initialize the distance matrix
     d = np.zeros((r,c))
-    for i in range(r):
-        for j in range(c):
-            d[i,j] = dist(reference[j]-sequence[i])
 
     # setting unwanted region to infinity
     j_limit = 0
@@ -59,7 +56,11 @@ def dtw(reference, sequence ,dist = np.linalg.norm, reconstruct=False):
             if d[i,j] == np.inf:
                 D[i+1,j+1] = np.inf
                 continue
-            if B[i-1,j,0] == i-2 and B[i-1,j,1] == j:
+            d[i,j] = dist(reference[j]-sequence[i])
+            if (B[i-1,j,0] == i-2 and B[i-1,j,1] == j) and (B[i,j-1,0] == i and B[i,j-1,1] == j-2):
+                D[i+1,j+1] = d[i,j]+D[i,j]
+                B[i,j] = [i-1,j-1]
+            elif B[i-1,j,0] == i-2 and B[i-1,j,1] == j:
                 D[i+1,j+1] = d[i,j]+min(D[i+1,j],D[i,j])
                 index = argmin([D[i+1,j],D[i,j]])
                 B[i,j] = [i-index,j-1]
@@ -71,7 +72,6 @@ def dtw(reference, sequence ,dist = np.linalg.norm, reconstruct=False):
                 D[i+1,j+1] = d[i,j]+min(D[i+1,j],D[i,j+1],D[i,j])
                 index = argmin([D[i+1,j],D[i,j+1],D[i,j]])
                 B[i,j] = [i-int(index>0), j-1+int(index==1)]
-    
 
     if reconstruct:
         i = r-1

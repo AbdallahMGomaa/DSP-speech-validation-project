@@ -65,7 +65,6 @@ def loadUser(path):
             users.append(user)
         utterence = Utterence(utterenceData['pair'],utterenceData['word'],MFCC)
         users[userId].utterences.append(utterence)
-    
     return users
 
 def loadReferences(path):
