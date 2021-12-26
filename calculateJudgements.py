@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import pandas as pd,numpy as np
 from calculateThreshold import calculateThreshold
 import timeit
-
+from featureScale import scale
 
 Types = [
     'M',
@@ -22,11 +22,15 @@ print("reading files...")
 references = loadReferences('reference')
 users = loadUser('users')
 print("loaded {} users!".format(len(users)))
+
+# scaling input data
+print("scaling input data...")
+users,references = scale(users,references)
+
 # for all references set the test reference to utterence number 123
 print("setting test utterences for references...")
 for reference in references:
     reference.setTestUtterence()
-
 
 # for all users set the test reference to utterence number 123 and calculate the reference user
 print("calculating references for users...")

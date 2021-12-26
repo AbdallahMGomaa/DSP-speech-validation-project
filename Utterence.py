@@ -1,4 +1,5 @@
 from dtw import dtw
+from fastdtw import fastdtw
 class Utterence:
     def __init__(self,pair,word,MFCC) -> None:
         self.pair = pair
@@ -6,7 +7,8 @@ class Utterence:
         self.MFCC = MFCC
         self.correct = None
     def distance(self,reference):
-        d = dtw(reference.MFCC,self.MFCC,reconstruct=False)
+        # d = dtw(reference.MFCC,self.MFCC,reconstruct=False)
+        d,_ = fastdtw(reference.MFCC,self.MFCC)
         return d
 
     def reconstruct(self,reference):
