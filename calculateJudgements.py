@@ -40,7 +40,10 @@ for user in users:
 
 #calculate thresholds of pairs
 print("calculating thresholds...")
-thresholds = calculateThreshold(users,references)
+nums = set(np.random.randint(low=0, high=len(users), size=150)) #generate some more for the duplicates
+nums = list(nums)[:20]
+thresholdUsers = np.take(users,nums,axis=0)
+thresholds = calculateThreshold(thresholdUsers,references)
 # calculate the judgements for a set of users
 def calculateJudgements(users, references,words=122,types=3,labels=5 ,print_results=False):
     judgements = np.zeros((types,words,labels),dtype=int)
