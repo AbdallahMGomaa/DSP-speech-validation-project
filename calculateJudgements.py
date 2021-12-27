@@ -4,6 +4,7 @@ import pandas as pd,numpy as np
 from calculateThreshold import calculateThreshold
 import timeit
 from featureScale import scale
+from os.path import exists
 
 Types = [
     'M',
@@ -40,10 +41,15 @@ for user in users:
 
 #calculate thresholds of pairs
 print("calculating thresholds...")
-nums = set(np.random.randint(low=0, high=len(users), size=150)) #generate some more for the duplicates
-nums = list(nums)[:20]
-thresholdUsers = np.take(users,nums,axis=0)
-thresholds = calculateThreshold(thresholdUsers,references)
+if exists("judgements.csv"):
+    thresholds = pd.read_csv("thresholds.csv",header=None).to_numpy()
+else:
+    nums = set(np.random.randint(low=0, high=len(users), size=150)) #generate some more for the duplicates
+    nums = list(nums)[:20]
+    thresholdUsers = np.take(users,nums,axis=0)
+    thresholds = calculateThreshold(thresholdUsers,references)
+    pd.DataFrame(thresholds).to_csv('thresholds.csv', index=False)
+    
 # calculate the judgements for a set of users
 def calculateJudgements(users, references,words=122,types=3,labels=5 ,print_results=False):
     judgements = np.zeros((types,words,labels),dtype=int)
@@ -90,7 +96,7 @@ judgements = calculateJudgements(users, references,print_results=True)
 stop = timeit.default_timer()
 print("total time for judgement: ", stop-start)
 
-def drawMismatches(users,numberOfMismatches=5, plot_results=False,save_results=False):  
+def drawMismatches(users,numberOfMismatches=5, plot_results=False,save_results=False,print_judgements=False):  
     plt.rcParams["figure.autolayout"] = True
     for user in users:
         name = "G{}S{}{}{}{}".format(user.group,user.student,Types[user.Type],user.age,Sources[user.source])
@@ -113,5 +119,8 @@ def drawMismatches(users,numberOfMismatches=5, plot_results=False,save_results=F
             plt.savefig("plots/"+name+".png")
         if plot_results:
             plt.show(block=False)
-
-# drawMismatches(users,numberOfMismatches=11, plot_results=False,save_results=True)
+        if print_judgements:
+            csvfile = name+".csv"
+            pd.DataFrame(user.judgements).to_csv("judgements/"+csvfile, index=False, header=["other","word2","word1","correct","wrong"])
+        
+drawMismatches(users,numberOfMismatches=11, plot_results=False,save_results=True,save_judgements=True)
