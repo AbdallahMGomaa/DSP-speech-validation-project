@@ -6,6 +6,8 @@ import timeit
 from featureScale import scale
 from os.path import exists
 
+indices = pd.read_csv("words.csv",header=None, encoding="utf-8-sig").to_numpy()
+
 Types = [
     'M',
     'F',
@@ -18,41 +20,10 @@ Sources = [
     'W'
 ]
 
-# loading reference MFCCs and user MFCCs
-print("reading files...")
-references = loadReferences('reference')
-users = loadUser('users')
-print("loaded {} users!".format(len(users)))
 
-# scaling input data
-print("scaling input data...")
-users,references = scale(users,references)
-
-# for all references set the test reference to utterence number 123
-print("setting test utterences for references...")
-for reference in references:
-    reference.setTestUtterence()
-
-# for all users set the test reference to utterence number 123 and calculate the reference user
-print("calculating references for users...")
-for user in users:
-    user.setTestUtterence()
-    user.calculateReference(references)
-
-#calculate thresholds of pairs
-print("calculating thresholds...")
-if exists("judgements.csv"):
-    thresholds = pd.read_csv("thresholds.csv",header=None).to_numpy()
-else:
-    nums = set(np.random.randint(low=0, high=len(users), size=150)) #generate some more for the duplicates
-    nums = list(nums)[:20]
-    thresholdUsers = np.take(users,nums,axis=0)
-    thresholds = calculateThreshold(thresholdUsers,references)
-    pd.DataFrame(thresholds).to_csv('thresholds.csv', index=False, header=False)
-    
 # calculate the judgements for a set of users
-def calculateJudgements(users, references,words=122,types=3,labels=5 ,print_results=False):
-    judgements = np.zeros((types,words,labels),dtype=int)
+def calculateJudgement(users, references,thresholds,words=122,types=3,print_results=False):
+    judgements = np.zeros((types,words,5),dtype=int)
     for i,user in enumerate(users):
         start = timeit.default_timer()
         print('calculating judgement for user: {}, group: {}, student: {}, type: {}, age: {}, source: {}'.format(i+1,user.group, user.student, Types[user.Type], user.age, Sources[user.source]),end=" ")
@@ -85,16 +56,10 @@ def calculateJudgements(users, references,words=122,types=3,labels=5 ,print_resu
         print('wrong',totalWrong, totalWrong*100/totalUtterences,"%")
 
         csvfile = "judgements"
-        pd.DataFrame(judgements[0,:,:]).to_csv(csvfile+"_male.csv", index=False, header=["other","word2","word1","correct","wrong"])
-        pd.DataFrame(judgements[1,:,:]).to_csv(csvfile+"_female.csv", index=False, header=["other","word2","word1","correct","wrong"])
-        pd.DataFrame(judgements[2,:,:]).to_csv(csvfile+"_child.csv", index=False, header=["other","word2","word1","correct","wrong"])
+        pd.DataFrame([indices,judgements[0,:,:]]).to_csv(csvfile+"_male.csv", index=False, header=["word","other","word2","word1","correct","wrong"], encoding="utf-8-sig")
+        pd.DataFrame([indices,judgements[1,:,:]]).to_csv(csvfile+"_female.csv", index=False, header=["word","other","word2","word1","correct","wrong"], encoding="utf-8-sig")
+        pd.DataFrame([indices,judgements[2,:,:]]).to_csv(csvfile+"_child.csv", index=False, header=["word","other","word2","word1","correct","wrong"], encoding="utf-8-sig")
     return judgements
-print("calculating judgements...")
-
-start = timeit.default_timer()
-judgements = calculateJudgements(users, references,print_results=True)
-stop = timeit.default_timer()
-print("total time for judgement: ", stop-start)
 
 def drawMismatches(users,numberOfMismatches=5, plot_results=False,save_results=False,print_judgements=False):  
     plt.rcParams["figure.autolayout"] = True
@@ -121,6 +86,46 @@ def drawMismatches(users,numberOfMismatches=5, plot_results=False,save_results=F
             plt.show(block=False)
         if print_judgements:
             csvfile = name+".csv"
-            pd.DataFrame(user.judgements).to_csv("judgements/"+csvfile, index=False, header=["other","word2","word1","correct","wrong"])
+            pd.DataFrame([indices,user.judgements]).to_csv("judgements/"+csvfile, index=False, header=["word","other","word2","word1","correct","wrong"], encoding="utf-8-sig")
         
-drawMismatches(users,numberOfMismatches=11, plot_results=False,save_results=True,print_judgements=True)
+if __name__=="__main__":
+    # loading reference MFCCs and user MFCCs
+    print("reading files...")
+    references = loadReferences('reference')
+    users = loadUser('users')
+    print("loaded {} users!".format(len(users)))
+
+    # scaling input data
+    print("scaling input data...")
+    users,references = scale(users,references)
+
+    # for all references set the test reference to utterence number 123
+    print("setting test utterences for references...")
+    for reference in references:
+        reference.setTestUtterence()
+
+    # for all users set the test reference to utterence number 123 and calculate the reference user
+    print("calculating references for users...")
+    for user in users:
+        user.setTestUtterence()
+        user.calculateReference(references)
+
+    #calculate thresholds of pairs
+    if exists("thresholds.csv"):
+        print("loading thresholds...")
+        thresholds = pd.read_csv("thresholds.csv",header=None).to_numpy()
+    else:
+        print("calculating thresholds...")
+        nums = set(np.random.randint(low=0, high=len(users), size=150)) #generate some more for the duplicates
+        nums = list(nums)[:20]
+        thresholdUsers = np.take(users,nums,axis=0)
+        thresholds = calculateThreshold(thresholdUsers,references)
+        pd.DataFrame(thresholds).to_csv('thresholds.csv', index=False, header=False)
+    print("calculating judgements...")
+
+    start = timeit.default_timer()
+    judgements = calculateJudgement(users, references,print_results=True)
+    stop = timeit.default_timer()
+    print("total time for judgement: ", stop-start)
+
+    drawMismatches(users,numberOfMismatches=11, plot_results=False,save_results=True,print_judgements=True)

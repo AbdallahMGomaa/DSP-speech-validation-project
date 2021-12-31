@@ -16,8 +16,8 @@ def calculateThreshold(users,references,words=122):
         d12 = d12[d12!=np.inf]
         d21 = d21[d21!=np.inf]
         d22 = d22[d22!=np.inf]
-        thresholds[2*j] = np.mean(d11)/0.75
-        thresholds[2*j+1] = np.mean(d22)/0.75
+        thresholds[2*j] = np.mean(d11)/0.6
+        thresholds[2*j+1] = np.mean(d22)/0.6
         # thresholds[2*j] = np.inf
         # thresholds[2*j+1] = np.inf
     return thresholds

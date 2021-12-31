@@ -1,4 +1,15 @@
 import numpy as np
+
+Types = [
+    'M',
+    'F',
+    'C'
+]
+Sources = [
+    'C',
+    'M',
+    'W'
+]
 class User():
     def __init__(self, group, student,Type,age,source):
         self.group = group
@@ -10,6 +21,8 @@ class User():
         self.reference = None
         self.testUtterence = None
         self.judgements = None
+        self.isScaled = False
+        
     def calculateReference(self,references):
         assert self.testUtterence is not None
         d_male = self.testUtterence.distance(references[0].testUtterence)
@@ -64,3 +77,6 @@ class User():
                 self.utterences[i*2+1].correct = False
         self.judgements = judgements
         return judgements
+
+    def __str__(self) -> str:
+        return "G{}S{}{}{}{}".format(self.group,self.student,Types[self.Type],self.age,Sources[self.source])
