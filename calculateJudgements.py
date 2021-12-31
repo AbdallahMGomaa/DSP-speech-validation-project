@@ -48,7 +48,7 @@ else:
     nums = list(nums)[:20]
     thresholdUsers = np.take(users,nums,axis=0)
     thresholds = calculateThreshold(thresholdUsers,references)
-    pd.DataFrame(thresholds).to_csv('thresholds.csv', index=False)
+    pd.DataFrame(thresholds).to_csv('thresholds.csv', index=False, header=False)
     
 # calculate the judgements for a set of users
 def calculateJudgements(users, references,words=122,types=3,labels=5 ,print_results=False):
@@ -123,4 +123,4 @@ def drawMismatches(users,numberOfMismatches=5, plot_results=False,save_results=F
             csvfile = name+".csv"
             pd.DataFrame(user.judgements).to_csv("judgements/"+csvfile, index=False, header=["other","word2","word1","correct","wrong"])
         
-drawMismatches(users,numberOfMismatches=11, plot_results=False,save_results=True,save_judgements=True)
+drawMismatches(users,numberOfMismatches=11, plot_results=False,save_results=True,print_judgements=True)

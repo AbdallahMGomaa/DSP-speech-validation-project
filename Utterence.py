@@ -13,4 +13,6 @@ class Utterence:
     def reconstruct(self,reference):
         d,reconstructed,distances = dtw(reference.MFCC,self.MFCC,reconstruct=True)
         return d,reconstructed,distances
+    def getIndex(self):
+        return (self.pair-1)*2+self.word-1
         

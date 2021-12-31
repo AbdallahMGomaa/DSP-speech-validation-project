@@ -86,7 +86,7 @@ def dtw(reference, sequence ,dist = np.linalg.norm, reconstruct=False):
         k=0
         for i,j in path:
             if not skipNext:
-                if k+1<c and j == path[k+1][1]:
+                if k+1<c and k+1<len(path) and j == path[k+1][1]:
                     constructed_sequence[j] = (sequence[i]+sequence[i+1])/2
                     skipNext = True
                 else:
