@@ -107,6 +107,10 @@ class SelectUser(Canvas):
         self.configure(yscrollcommand=scrollbar.set,scrollregion=self.bbox("all"))
         scrollbar.pack(side=RIGHT, fill=Y)
         Button(self,text="proceed",command=lambda: self.select(parent,users,references,thresholds)).pack(side=TOP)
+        Button(self,text="all males",command=lambda: parent.switch_frame(ShowAllJudgements,users,references,thresholds,0)).pack(side=TOP)
+        Button(self,text="all females",command=lambda: parent.switch_frame(ShowAllJudgements,users,references,thresholds,1)).pack(side=TOP)
+        Button(self,text="all children",command=lambda: parent.switch_frame(ShowAllJudgements,users,references,thresholds,2)).pack(side=TOP)
+        Button(self,text="all users",command=lambda: parent.switch_frame(ShowAllTypesJudgements,users,references,thresholds)).pack(side=TOP)
         self.pack(fill="both",expand=True,side=LEFT)
     def select(self,parent,users,references,thresholds):
         parent.switch_frame(ShowJudgements,self.selected.get(),users,references,thresholds)
@@ -146,6 +150,73 @@ class ShowJudgements(Frame):
         Button(self,text="show mismatches",command=lambda: parent.switch_frame(ShowMismatches,user,users,references,thresholds)).pack(side=TOP)
         Button(self,text="back",command=lambda: parent.switch_frame(SelectUser,users,references,thresholds)).pack(side=TOP)
 
+class ShowAllJudgements(Frame):
+    def __init__(self,parent,args):
+        Frame.__init__(self,parent)
+        users, references, thresholds,Type = args
+        Label(self,text="judgements for all {} users".format(Types[Type])).pack(side=TOP)
+        tree = ttk.Treeview(self,columns=("word","other","word2","word1","correct","wrong"),show="headings")
+        judgements = np.zeros((122,5),dtype=int)
+        for user in users:
+            if user.Type == Type:
+                if user.testUtterence is None:
+                    user.setTestUtterence()
+                if user.reference == None:
+                    user.calculateReference(references)
+                judgements += user.getJudgements(references,thresholds)
+        tree.column("#1", anchor=CENTER,width=60)
+        tree.heading("#1", text="Word")
+        tree.column("#2", anchor=CENTER,width=60)
+        tree.heading("#2", text="Other")
+        tree.column("#3", anchor=CENTER,width=60)
+        tree.heading("#3", text="Word2")
+        tree.column("#4", anchor=CENTER,width=60)
+        tree.heading("#4", text="Word1")
+        tree.column("#5", anchor=CENTER,width=60)
+        tree.heading("#5", text="Correct")
+        tree.column("#6", anchor=CENTER,width=60)
+        tree.heading("#6", text="Wrong")
+        for i,row in enumerate(judgements):
+            val = [indices[i,0]]+row.tolist()
+            tree.insert("", END, values=val)
+        total = ["Total"]+np.sum(judgements,axis=0).tolist()
+        tree.insert("", END, values=total)
+        tree.pack(side=TOP)
+        Label(self,text="accuracy = {:.2f}%".format(100*total[4]/(total[4]+total[5]))).pack(side=TOP)
+        Button(self,text="back",command=lambda: parent.switch_frame(SelectUser,users,references,thresholds)).pack(side=TOP)
+
+class ShowAllTypesJudgements(Frame):
+    def __init(self,parent,args):
+        users, references, thresholds = args
+        Label(self,text="judgements for all users").pack(side=TOP)
+        tree = ttk.Treeview(self,columns=("word","other","word2","word1","correct","wrong"),show="headings")
+        judgements = np.zeros((122,5),dtype=int)
+        for user in users:
+            if user.testUtterence is None:
+                user.setTestUtterence()
+            if user.reference == None:
+                user.calculateReference(references)
+            judgements += user.getJudgements(references,thresholds)
+        tree.column("#1", anchor=CENTER,width=60)
+        tree.heading("#1", text="Word")
+        tree.column("#2", anchor=CENTER,width=60)
+        tree.heading("#2", text="Other")
+        tree.column("#3", anchor=CENTER,width=60)
+        tree.heading("#3", text="Word2")
+        tree.column("#4", anchor=CENTER,width=60)
+        tree.heading("#4", text="Word1")
+        tree.column("#5", anchor=CENTER,width=60)
+        tree.heading("#5", text="Correct")
+        tree.column("#6", anchor=CENTER,width=60)
+        tree.heading("#6", text="Wrong")
+        for i,row in enumerate(judgements):
+            val = [indices[i,0]]+row.tolist()
+            tree.insert("", END, values=val)
+        total = ["Total"]+np.sum(judgements,axis=0).tolist()
+        tree.insert("", END, values=total)
+        tree.pack(side=TOP)
+        Label(self,text="accuracy = {:.2f}%".format(100*total[4]/(total[4]+total[5]))).pack(side=TOP)
+        Button(self,text="back",command=lambda: parent.switch_frame(SelectUser,users,references,thresholds)).pack(side=TOP)
 class ShowMismatches(Canvas):
     def __init__(self,parent,args):
         Canvas.__init__(self,parent)

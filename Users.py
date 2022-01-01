@@ -21,7 +21,6 @@ class User():
         self.reference = None
         self.testUtterence = None
         self.judgements = None
-        self.isScaled = False
         
     def calculateReference(self,references):
         assert self.testUtterence is not None
