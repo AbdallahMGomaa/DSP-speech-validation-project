@@ -186,7 +186,8 @@ class ShowAllJudgements(Frame):
         Button(self,text="back",command=lambda: parent.switch_frame(SelectUser,users,references,thresholds)).pack(side=TOP)
 
 class ShowAllTypesJudgements(Frame):
-    def __init(self,parent,args):
+    def __init__(self,parent,args):
+        Frame.__init__(self,parent)
         users, references, thresholds = args
         Label(self,text="judgements for all users").pack(side=TOP)
         tree = ttk.Treeview(self,columns=("word","other","word2","word1","correct","wrong"),show="headings")
