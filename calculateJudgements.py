@@ -64,7 +64,7 @@ def calculateJudgement(users, references,thresholds,words=122,types=3,print_resu
 def drawMismatches(users,numberOfMismatches=5, plot_results=False,save_results=False,print_judgements=False):  
     plt.rcParams["figure.autolayout"] = True
     for user in users:
-        name = "G{}S{}{}{}{}".format(user.group,user.student,Types[user.Type],user.age,Sources[user.source])
+        name = str(user)
         rows = int(np.sqrt(numberOfMismatches))
         columns = int(np.round(numberOfMismatches/rows+0.5))
         j = 0

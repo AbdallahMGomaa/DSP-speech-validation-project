@@ -78,5 +78,11 @@ class User():
         self.judgements = judgements
         return judgements
 
+    def getMismatches(self,references):
+        mismatches = []
+        for i in range(len(self.utterences)):
+            _,_,distances = self.utterences[i].reconstruct(references[self.reference].utterences[i])
+            mismatches.append(distances)
+        return mismatches
     def __str__(self) -> str:
         return "G{}S{}{}{}{}".format(self.group,self.student,Types[self.Type],self.age,Sources[self.source])
